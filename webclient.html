@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,16 +16,19 @@
             margin: 0 auto;
             padding: 20px;
         }
+
         #chat-container {
             display: flex;
             flex-direction: column;
             height: 80vh;
         }
+
         #prompt-input {
             width: 100%;
             height: 100px;
             margin-bottom: 10px;
         }
+
         #send-button {
             align-self: flex-end;
             padding: 10px 20px;
@@ -33,6 +37,7 @@
             border: none;
             cursor: pointer;
         }
+
         #response-container {
             flex-grow: 1;
             overflow-y: auto;
@@ -40,6 +45,7 @@
             padding: 10px;
             margin-top: 10px;
         }
+
         cd-el {
             outline: none;
             user-select: text;
@@ -60,26 +66,35 @@
             cursor: text;
             tab-size: 2;
         }
+
         /* Additional styles for markdown content */
         #response-text {
-            font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji;
             font-size: 16px;
             line-height: 1.5;
             word-wrap: break-word;
         }
-        #response-text h1, #response-text h2, #response-text h3, #response-text h4, #response-text h5, #response-text h6 {
+
+        #response-text h1,
+        #response-text h2,
+        #response-text h3,
+        #response-text h4,
+        #response-text h5,
+        #response-text h6 {
             margin-top: 24px;
             margin-bottom: 16px;
             font-weight: 600;
             line-height: 1.25;
         }
+
         #response-text code {
             padding: .2em .4em;
             margin: 0;
             font-size: 85%;
-            background-color: rgba(27,31,35,.05);
+            background-color: rgba(27, 31, 35, .05);
             border-radius: 3px;
         }
+
         #response-text pre {
             padding: 16px;
             overflow: auto;
@@ -90,6 +105,7 @@
         }
     </style>
 </head>
+
 <body>
     <h1>AI Chat Application with Markdown Support</h1>
     <div id="chat-container">
@@ -128,13 +144,14 @@
 
                 const data = await response.json();
                 const markdown = data.response;
-                const html = DOMPurify.sanitize(marked(markdown));
-                responseText.innerHTML = html;
-
+                //const html = DOMPurify.sanitize(marked(markdown));
+                //responseText.innerHTML = html;
+                responseText.textContent = data.response;
                 // Apply syntax highlighting to code blocks
-                Prism.highlightAllUnder(responseText);
+                //Prism.highlightAllUnder(responseText);
             } catch (error) {
                 console.error('Error:', error);
+                //responseText.textContent = data.response;
                 responseText.textContent = 'An error occurred while fetching the response.';
             }
 
@@ -142,4 +159,5 @@
         }
     </script>
 </body>
+
 </html>
