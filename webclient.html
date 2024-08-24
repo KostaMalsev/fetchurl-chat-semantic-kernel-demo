@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Application with Markdown Support</title>
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,13 +45,13 @@
 
         /* Additional styles for markdown content */
         #response-text {
-          height: 100%;
-          width: 100%;
+            height: 100%;
+            width: 100%;
         }
-        
+
         iframe {
-          height: 100%;
-          width: 100%;
+            height: 100%;
+            width: 100%;
         }
 
         #response-text h1,
@@ -91,387 +91,168 @@
         <textarea id="prompt-input" placeholder="Enter your prompt here..."></textarea>
         <button id="send-button">Send</button>
         <div id="response-container">
-            <div id="response-text">Here's the content of the `gitapi.js` file:
-
-```javascript
-// change pushing state
-
-let pendingPromise;
-
-function changePushingState(to, pendingPromise) {
-
-  if (to === true) {
-
-    pendingPromise = pendingPromise ?? null;
-
-    window.addEventListener('beforeunload', beforeUnloadListener, {capture: true});
-
-  } else {
-
-    pendingPromise = null;
-
-    window.removeEventListener('beforeunload', beforeUnloadListener, {capture: true});
-
-  }
-
-}
-
-const beforeUnloadListener = (event) => {
-
-  event.preventDefault();
-  return event.returnValue = 'Are you sure you want to exit?';
-
-};
-
-
-let git = {
-
-  // get a blob
-  'getBlob': async (treeLoc, sha) => {
-
-    // map tree location
-    let query = 'https://api.github.com';
-    const [user, repo] = treeLoc;
-
-    // get repository branch
-    let [repoName, branch] = repo.split(':');
-
-    if (branch) branch = '?ref='+ branch;
-    else branch = '';
-
-    query += '/repos/'+ user +'/'+ repoName +'/git/blobs/'+ sha + branch;
-
-    // get the query
-    const resp = await axios.get(query, gitToken);
-
-    return resp;
-
-  },
-
-  // get a file
-  'getFile': async (treeLoc, fileName) => {
-
-    // map tree location
-    let query = 'https://api.github.com';
-    const [user, repo, contents] = treeLoc;
-
-    // get repository branch
-    let [repoName, branch] = repo.split(':');
-
-    if (branch) branch = '?ref='+ branch;
-    else branch = '';
-  
-    query += '/repos/' + user + '/' + repoName +
-             '/contents/' + contents
-             + '/' + fileName +
-             branch;
-  
-    // get the query
-    const resp = await axios.get(query, gitToken);
-  
-    return resp;
-
-  },
-  
-  // get public file content
-  'getPublicFile': async (treeLoc, fileName) => {
-    
-    // map tree location
-    let query = 'https://raw.githubusercontent.com';
-    const [user, repo, contents] = treeLoc;
-
-    // get repository branch
-    let [repoName, branch] = repo.split(':');
-  
-    query += '/' + user + '/' + repoName +
-             '/' + branch +
-             '/' + contents + '/' + fileName;
-  
-    // get the query
-    const resp = await axios.get(query, gitToken);
-  
-    return resp;
-
-  }
-};
-```
-
-### Potential Fixes and Improvements:
-
-1. **Parameter Collision in `changePushingState` Function:**
-   The local `pendingPromise` parameter is named the same as the global variable. This can create unwanted side effects.
-   
-   ```javascript
-   function changePushingState(to, promise) {
-     // Use 'promise' instead of 'pendingPromise'
-     ...
-   }
-   ```
-
-2. **Check for `axios` and `gitToken` Variables:**
-   Ensure that `axios` and `gitToken` are defined globally if they are not imported/defined in this snippet.
-
-3. **Error Handling in Async Functions:**
-   Add try-catch blocks in the async functions to handle potential errors.
-
-Here is the improved code:
-
-```javascript
-// change pushing state
-
-let pendingPromise;
-
-function changePushingState(to, promise) {
-  if (to === true) {
-    pendingPromise = promise ?? null;
-    window.addEventListener('beforeunload', beforeUnloadListener, {capture: true});
-  } else {
-    pendingPromise = null;
-    window.removeEventListener('beforeunload', beforeUnloadListener, {capture: true});
-  }
-}
-
-const beforeUnloadListener = (event) => {
-  event.preventDefault();
-  return event.returnValue = 'Are you sure you want to exit?';
-};
-
-let git = {
-  // get a blob
-  async getBlob(treeLoc, sha) {
-    try {
-      // map tree location
-      let query = 'https://api.github.com';
-      const [user, repo] = treeLoc;
-
-      // get repository branch
-      let [repoName, branch] = repo.split(':');
-      branch = branch ? '?ref=' + branch : '';
-
-      query += '/repos/' + user + '/' + repoName + '/git/blobs/' + sha + branch;
-
-      // get the query
-      const resp = await axios.get(query, gitToken);
-      return resp;
-
-    } catch (e) {
-      console.error('Error getting blob:', e);
-    }
-  },
-
-  // get a file
-  async getFile(treeLoc, fileName) {
-    try {
-      // map tree location
-      let query = 'https://api.github.com';
-      const [user, repo, contents] = treeLoc;
-
-      // get repository branch
-      let [repoName, branch] = repo.split(':');
-      branch = branch ? '?ref=' + branch : '';
-
-      query += '/repos/' + user + '/' + repoName + '/contents/' + contents + '/' + fileName + branch;
-
-      // get the query
-      const resp = await axios.get(query, gitToken);
-      return resp;
-
-    } catch (e) {
-      console.error('Error getting file:', e);
-    }
-  },
-
-  // get public file content
-  async getPublicFile(treeLoc, fileName) {
-    try {
-      // map tree location
-      let query = 'https://raw.githubusercontent.com';
-      const [user, repo, contents] = treeLoc;
-
-      // get repository branch
-      let [repoName, branch] = repo.split(':');
-
-      query += '/' + user + '/' + repoName + '/' + branch + '/' + contents + '/' + fileName;
-
-      // get the query
-      const resp = await axios.get(query, gitToken);
-      return resp;
-
-    } catch (e) {
-      console.error('Error getting public file:', e);
-    }
-  }
-};
-```
-
-These changes will ensure the variable scoping is correct, add error handling, and improve readability.</div>
+            <div id="response-text"> </div>
         </div>
     </div>
 
-    <script src="/utils.js"></script>
+    <script src="./utils.js"></script>
 
     <script>
         const promptInput = document.getElementById('prompt-input');
         const sendButton = document.getElementById('send-button');
         const responseText = document.getElementById('response-text');
-        const liveView  = responseText;
+        const liveView = responseText;
 
-        renderLiveViewMarkdown(responseText.textContent)
 
 
         // render live view for Markdown files
-            async function renderLiveViewMarkdown(contentText) {
+        async function renderLiveViewMarkdown(contentText) {
 
-                liveView.innerHTML = '<iframe srcdoc="<!DOCTYPE html><html><head></head><body ontouchstart></body></html>" name="Live view" title="Live view" style="background: hsl(228deg 16% 12%);" class="live-frame" loading="lazy" scrolling="yes" frameborder="0"></iframe>';
+            liveView.innerHTML = '<iframe srcdoc="<!DOCTYPE html><html><head></head><body ontouchstart></body></html>" name="Live view" title="Live view" style="background: hsl(228deg 16% 12%);" class="live-frame" loading="lazy" scrolling="yes" frameborder="0"></iframe>';
 
-                const liveFrame = liveView.querySelector('.live-frame');
+            const liveFrame = liveView.querySelector('.live-frame');
 
-                await new Promise(resolve => { liveFrame.onload = resolve; });
+            await new Promise(resolve => { liveFrame.onload = resolve; });
 
-                const frameDoc = liveFrame.contentDocument;
+            const frameDoc = liveFrame.contentDocument;
 
 
-                // if markdown compiler isn't loaded
-                if (typeof marked === 'undefined' ||
-                    typeof DOMPurify === 'undefined') {
+            // if markdown compiler isn't loaded
+            if (typeof marked === 'undefined' ||
+                typeof DOMPurify === 'undefined') {
 
-                    // load markdown compiler
-                    await loadScript('https://codeit.codes/live-view/extensions/marked.min.js');
-
-                }
-
-
-                let html = marked.parse(contentText);
-                html = DOMPurify.sanitize(html);
-
-                frameDoc.head.innerHTML = '<base href="about:blank">';
-
-                frameDoc.body.style.display = 'none';
-                frameDoc.body.innerHTML = html;
-
-                setAttr(frameDoc.body, 'dir', 'auto');
-
-                frameDoc.body.querySelectorAll('a[href]:not([target="_blank"])').forEach(link => {
-
-                    const href = getAttr(link, 'href');
-
-                    if (!href.startsWith('#')) {
-
-                        link.title = isMac ? '⌘ + click to open link' : 'Ctrl + click to open link';
-
-                        link.onclick = (e) => {
-
-                            e.preventDefault();
-
-                            if (event.ctrlKey || event.metaKey) {
-
-                                window.open(href, '_blank');
-
-                            } else {
-
-                                showMessage(href);
-
-                            }
-
-                        };
-
-                    } else {
-
-                        link.onclick = (e) => {
-
-                            e.preventDefault();
-
-                            const target = frameDoc.querySelector(href);
-                            target.scrollIntoView();
-
-                        };
-
-                    }
-
-                });
-
-
-                let fetchPromises = [];
-
-
-                fetchPromises.push((async (i) => {
-
-                    await loadStyleSheet('https://codeit.codes/live-view/extensions/markdown-dark.css', frameDoc.head)
-
-                    fetchPromises.splice(i, 1);
-                })(fetchPromises.length));
-
-                fetchPromises.push((async (i) => {
-
-                    await loadStyleSheet('https://codeit.codes/fonts/fonts.css', frameDoc.head);
-
-                    fetchPromises.splice(i, 1);
-                })(fetchPromises.length));
-
-
-                if (frameDoc.body.querySelector('pre code')) {
-
-                    fetchPromises.push((async (i) => {
-
-                        await loadStyleSheet('https://codeit.codes/editor-theme.css', frameDoc.body);
-
-                        frameDoc.body.querySelectorAll('pre').forEach(pre => {
-
-                            const codeEl = pre.querySelector('code');
-                            const lang = codeEl.classList[0] ? codeEl.classList[0].replace('language-', '') : '';
-
-                            const code = codeEl.textContent.replace(/[\u00A0-\u9999<>\&]/g, (i) => {
-                                return '&#' + i.charCodeAt(0) + ';';
-                            });
-
-                            pre.outerHTML = '<cd-el lang="' + lang.toLowerCase() + '" edit="false">' + code + '</cd-el>';
-
-                        });
-
-                        fetchPromises.splice(i, 1);
-                    })(fetchPromises.length));
-
-                    (async (i) => {
-
-                        await loadScript('https://codeit.codes/lib/prism.js', frameDoc.body);
-
-
-                        let s = document.createElement('script');
-
-                        s.appendChild(document.createTextNode(`Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/'`));
-
-                        frameDoc.body.appendChild(s);
-
-                        onNextFrame(() => {
-                            frameDoc.body.removeChild(s);
-                        });
-
-
-                        await loadScript('https://codeit.codes/lib/codeit.js', frameDoc.body);
-
-                        fetchPromises.splice(i, 1);
-                    })(fetchPromises.length);
-
-                }
-
-
-                await asyncForEach(fetchPromises, async (promise) => {
-
-                    if (fetchPromises.length === 0) return;
-
-                    if (promise) await promise;
-
-                });
-
-                frameDoc.body.style.display = '';
-                liveView.classList.add('loaded');
+                // load markdown compiler
+                await loadScript('https://codeit.codes/live-view/extensions/marked.min.js');
 
             }
 
 
+            let html = marked.parse(contentText);
+            html = DOMPurify.sanitize(html);
+
+            frameDoc.head.innerHTML = '<base href="about:blank">';
+
+            frameDoc.body.style.display = 'none';
+            frameDoc.body.innerHTML = html;
+
+            setAttr(frameDoc.body, 'dir', 'auto');
+
+            frameDoc.body.querySelectorAll('a[href]:not([target="_blank"])').forEach(link => {
+
+                const href = getAttr(link, 'href');
+
+                if (!href.startsWith('#')) {
+
+                    link.title = isMac ? '⌘ + click to open link' : 'Ctrl + click to open link';
+
+                    link.onclick = (e) => {
+
+                        e.preventDefault();
+
+                        if (event.ctrlKey || event.metaKey) {
+
+                            window.open(href, '_blank');
+
+                        } else {
+
+                            showMessage(href);
+
+                        }
+
+                    };
+
+                } else {
+
+                    link.onclick = (e) => {
+
+                        e.preventDefault();
+
+                        const target = frameDoc.querySelector(href);
+                        target.scrollIntoView();
+
+                    };
+
+                }
+
+            });
 
 
+            let fetchPromises = [];
 
+
+            fetchPromises.push((async (i) => {
+
+                await loadStyleSheet('https://codeit.codes/live-view/extensions/markdown-dark.css', frameDoc.head)
+
+                fetchPromises.splice(i, 1);
+            })(fetchPromises.length));
+
+            fetchPromises.push((async (i) => {
+
+                await loadStyleSheet('https://codeit.codes/fonts/fonts.css', frameDoc.head);
+
+                fetchPromises.splice(i, 1);
+            })(fetchPromises.length));
+
+
+            if (frameDoc.body.querySelector('pre code')) {
+
+                fetchPromises.push((async (i) => {
+
+                    await loadStyleSheet('https://codeit.codes/editor-theme.css', frameDoc.body);
+
+                    frameDoc.body.querySelectorAll('pre').forEach(pre => {
+
+                        const codeEl = pre.querySelector('code');
+                        const lang = codeEl.classList[0] ? codeEl.classList[0].replace('language-', '') : '';
+
+                        const code = codeEl.textContent.replace(/[\u00A0-\u9999<>\&]/g, (i) => {
+                            return '&#' + i.charCodeAt(0) + ';';
+                        });
+
+                        pre.outerHTML = '<cd-el lang="' + lang.toLowerCase() + '" edit="false">' + code + '</cd-el>';
+
+                    });
+
+                    fetchPromises.splice(i, 1);
+                })(fetchPromises.length));
+
+                (async (i) => {
+
+                    await loadScript('https://codeit.codes/lib/prism.js', frameDoc.body);
+
+
+                    let s = document.createElement('script');
+
+                    s.appendChild(document.createTextNode(`Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/'`));
+
+                    frameDoc.body.appendChild(s);
+
+                    onNextFrame(() => {
+                        frameDoc.body.removeChild(s);
+                    });
+
+
+                    await loadScript('https://codeit.codes/lib/codeit.js', frameDoc.body);
+
+                    fetchPromises.splice(i, 1);
+                })(fetchPromises.length);
+
+            }
+
+
+            await asyncForEach(fetchPromises, async (promise) => {
+
+                if (fetchPromises.length === 0) return;
+
+                if (promise) await promise;
+
+            });
+
+            frameDoc.body.style.display = '';
+            liveView.classList.add('loaded');
+
+        }
 
 
         sendButton.addEventListener('click', sendPrompt);
@@ -497,14 +278,10 @@ These changes will ensure the variable scoping is correct, add error handling, a
 
                 const data = await response.json();
                 const markdown = data.response;
-                //const html = DOMPurify.sanitize(marked(markdown));
-                //responseText.innerHTML = html;
-                responseText.textContent = data.response;
-                // Apply syntax highlighting to code blocks
-                //Prism.highlightAllUnder(responseText);
+                renderLiveViewMarkdown(data.response);
+
             } catch (error) {
                 console.error('Error:', error);
-                //responseText.textContent = data.response;
                 responseText.textContent = 'An error occurred while fetching the response.';
             }
 
