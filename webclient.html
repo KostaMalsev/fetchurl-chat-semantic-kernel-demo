@@ -5,11 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Application with Markdown Support</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.24.1/themes/prism.css">
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.24.1/prism.min.js"></script>
-    <base href="https://codeit.codes">
     
     <style>
         body {
@@ -313,7 +308,7 @@ These changes will ensure the variable scoping is correct, add error handling, a
         </div>
     </div>
 
-    <script src="https://fetchurl-chat-semantic-kernel-demo.vercel.app/utils.js"></script>
+    <script src="/utils.js"></script>
 
     <script>
         const promptInput = document.getElementById('prompt-input');
@@ -341,7 +336,7 @@ These changes will ensure the variable scoping is correct, add error handling, a
                     typeof DOMPurify === 'undefined') {
 
                     // load markdown compiler
-                    await loadScript('live-view/extensions/marked.min.js');
+                    await loadScript('https://codeit.codes/live-view/extensions/marked.min.js');
 
                 }
 
@@ -401,14 +396,14 @@ These changes will ensure the variable scoping is correct, add error handling, a
 
                 fetchPromises.push((async (i) => {
 
-                    await loadStyleSheet(window.location.origin + '/live-view/extensions/markdown-dark.css', frameDoc.head)
+                    await loadStyleSheet('https://codeit.codes/live-view/extensions/markdown-dark.css', frameDoc.head)
 
                     fetchPromises.splice(i, 1);
                 })(fetchPromises.length));
 
                 fetchPromises.push((async (i) => {
 
-                    await loadStyleSheet(window.location.origin + '/fonts/fonts.css', frameDoc.head);
+                    await loadStyleSheet('https://codeit.codes/fonts/fonts.css', frameDoc.head);
 
                     fetchPromises.splice(i, 1);
                 })(fetchPromises.length));
@@ -418,7 +413,7 @@ These changes will ensure the variable scoping is correct, add error handling, a
 
                     fetchPromises.push((async (i) => {
 
-                        await loadStyleSheet(window.location.origin + '/editor-theme.css', frameDoc.body);
+                        await loadStyleSheet('https://codeit.codes/editor-theme.css', frameDoc.body);
 
                         frameDoc.body.querySelectorAll('pre').forEach(pre => {
 
@@ -438,7 +433,7 @@ These changes will ensure the variable scoping is correct, add error handling, a
 
                     (async (i) => {
 
-                        await loadScript(window.location.origin + '/lib/prism.js', frameDoc.body);
+                        await loadScript('https://codeit.codes/lib/prism.js', frameDoc.body);
 
 
                         let s = document.createElement('script');
@@ -452,7 +447,7 @@ These changes will ensure the variable scoping is correct, add error handling, a
                         });
 
 
-                        await loadScript(window.location.origin + '/lib/codeit.js', frameDoc.body);
+                        await loadScript('https://codeit.codes/lib/codeit.js', frameDoc.body);
 
                         fetchPromises.splice(i, 1);
                     })(fetchPromises.length);
