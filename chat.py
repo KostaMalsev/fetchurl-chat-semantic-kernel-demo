@@ -26,7 +26,7 @@ class FetchPlugin:
 
     @kernel_function(name="get_content_from_url", description="Get the content from url")
     def get_content_from_url(self, url: Annotated[str, "The input url"]) -> Annotated[str, "The output is a string"]:
-        return fetch_text_content_from_url(url)
+        return "some result" #fetch_text_content_from_url(url)
 
 async def main():
     kernel = Kernel()

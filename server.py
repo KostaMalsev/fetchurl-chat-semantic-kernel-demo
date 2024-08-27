@@ -3,6 +3,7 @@ from typing import Annotated
 from dotenv import load_dotenv
 import asyncio
 from fastapi import FastAPI, Body
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -19,6 +20,16 @@ from fetchurl import fetch_text_content_from_url
 load_dotenv()
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 
 class PromptRequest(BaseModel):
     prompt: str
@@ -62,8 +73,8 @@ async def demo_prompt(request: PromptRequest):
     settings.function_choice_behavior = FunctionChoiceBehavior.Auto(filters={"included_plugins": ["fetchurl"]})
 
     result = await kernel.invoke_prompt(
-        function_name="prompt_test",
-        plugin_name="fetchurl_test",
+        function_name="get_content_from_url",
+        plugin_name="fetchurl",
         prompt=request.prompt,
         settings=settings,
     )
