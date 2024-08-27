@@ -48,40 +48,6 @@
             height: 100%;
             width: 100%;
         }
-
-        iframe {
-            height: 100%;
-            width: 100%;
-        }
-
-        #response-text h1,
-        #response-text h2,
-        #response-text h3,
-        #response-text h4,
-        #response-text h5,
-        #response-text h6 {
-            margin-top: 24px;
-            margin-bottom: 16px;
-            font-weight: 600;
-            line-height: 1.25;
-        }
-
-        #response-text code {
-            padding: .2em .4em;
-            margin: 0;
-            font-size: 85%;
-            background-color: rgba(27, 31, 35, .05);
-            border-radius: 3px;
-        }
-
-        #response-text pre {
-            padding: 16px;
-            overflow: auto;
-            font-size: 85%;
-            line-height: 1.45;
-            background-color: #f6f8fa;
-            border-radius: 3px;
-        }
     </style>
 </head>
 
@@ -95,168 +61,32 @@
         </div>
     </div>
 
-    <script src="./utils.js"></script>
+    
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script>
+            function renderMarkdown(string) {
+                document.getElementById('response-text').innerHTML =
+                    DOMPurify.sanitize(marked.parse(string));
+                    Prism.highlightAll()
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+
+    
 
     <script>
-        const promptInput = document.getElementById('prompt-input');
-        const sendButton = document.getElementById('send-button');
-        const responseText = document.getElementById('response-text');
-        const liveView = responseText;
 
-
-
-        // render live view for Markdown files
-        async function renderLiveViewMarkdown(contentText) {
-
-            liveView.innerHTML = '<iframe srcdoc="<!DOCTYPE html><html><head></head><body ontouchstart></body></html>" name="Live view" title="Live view" style="background: hsl(228deg 16% 12%);" class="live-frame" loading="lazy" scrolling="yes" frameborder="0"></iframe>';
-
-            const liveFrame = liveView.querySelector('.live-frame');
-
-            await new Promise(resolve => { liveFrame.onload = resolve; });
-
-            const frameDoc = liveFrame.contentDocument;
-
-
-            // if markdown compiler isn't loaded
-            if (typeof marked === 'undefined' ||
-                typeof DOMPurify === 'undefined') {
-
-                // load markdown compiler
-                await loadScript('https://codeit.codes/live-view/extensions/marked.min.js');
-
-            }
-
-
-            let html = marked.parse(contentText);
-            html = DOMPurify.sanitize(html);
-
-            frameDoc.head.innerHTML = '<base href="about:blank">';
-
-            frameDoc.body.style.display = 'none';
-            frameDoc.body.innerHTML = html;
-
-            setAttr(frameDoc.body, 'dir', 'auto');
-
-            frameDoc.body.querySelectorAll('a[href]:not([target="_blank"])').forEach(link => {
-
-                const href = getAttr(link, 'href');
-
-                if (!href.startsWith('#')) {
-
-                    link.title = isMac ? '⌘ + click to open link' : 'Ctrl + click to open link';
-
-                    link.onclick = (e) => {
-
-                        e.preventDefault();
-
-                        if (event.ctrlKey || event.metaKey) {
-
-                            window.open(href, '_blank');
-
-                        } else {
-
-                            showMessage(href);
-
-                        }
-
-                    };
-
-                } else {
-
-                    link.onclick = (e) => {
-
-                        e.preventDefault();
-
-                        const target = frameDoc.querySelector(href);
-                        target.scrollIntoView();
-
-                    };
-
-                }
-
-            });
-
-
-            let fetchPromises = [];
-
-
-            fetchPromises.push((async (i) => {
-
-                await loadStyleSheet('https://codeit.codes/live-view/extensions/markdown-dark.css', frameDoc.head)
-
-                fetchPromises.splice(i, 1);
-            })(fetchPromises.length));
-
-            fetchPromises.push((async (i) => {
-
-                await loadStyleSheet('https://codeit.codes/fonts/fonts.css', frameDoc.head);
-
-                fetchPromises.splice(i, 1);
-            })(fetchPromises.length));
-
-
-            if (frameDoc.body.querySelector('pre code')) {
-
-                fetchPromises.push((async (i) => {
-
-                    await loadStyleSheet('https://codeit.codes/editor-theme.css', frameDoc.body);
-
-                    frameDoc.body.querySelectorAll('pre').forEach(pre => {
-
-                        const codeEl = pre.querySelector('code');
-                        const lang = codeEl.classList[0] ? codeEl.classList[0].replace('language-', '') : '';
-
-                        const code = codeEl.textContent.replace(/[\u00A0-\u9999<>\&]/g, (i) => {
-                            return '&#' + i.charCodeAt(0) + ';';
-                        });
-
-                        pre.outerHTML = '<cd-el lang="' + lang.toLowerCase() + '" edit="false">' + code + '</cd-el>';
-
-                    });
-
-                    fetchPromises.splice(i, 1);
-                })(fetchPromises.length));
-
-                (async (i) => {
-
-                    await loadScript('https://codeit.codes/lib/prism.js', frameDoc.body);
-
-
-                    let s = document.createElement('script');
-
-                    s.appendChild(document.createTextNode(`Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/'`));
-
-                    frameDoc.body.appendChild(s);
-
-                    onNextFrame(() => {
-                        frameDoc.body.removeChild(s);
-                    });
-
-
-                    await loadScript('https://codeit.codes/lib/codeit.js', frameDoc.body);
-
-                    fetchPromises.splice(i, 1);
-                })(fetchPromises.length);
-
-            }
-
-
-            await asyncForEach(fetchPromises, async (promise) => {
-
-                if (fetchPromises.length === 0) return;
-
-                if (promise) await promise;
-
-            });
-
-            frameDoc.body.style.display = '';
-            liveView.classList.add('loaded');
-
-        }
-
-
+        const sendButton = document.getElementById("send-button");
+            const promptInput = document.getElementById("prompt-input");
+            const responseText = document.getElementById("response-text");
+        //Set the send button:
         sendButton.addEventListener('click', sendPrompt);
 
+        
         async function sendPrompt() {
             const prompt = promptInput.value.trim();
             if (!prompt) return;
@@ -278,7 +108,8 @@
 
                 const data = await response.json();
                 const markdown = data.response;
-                renderLiveViewMarkdown(data.response);
+                //Render the response:
+                renderMarkdown(data.response);
 
             } catch (error) {
                 console.error('Error:', error);
