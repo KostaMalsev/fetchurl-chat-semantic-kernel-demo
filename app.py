@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import asyncio
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from pydantic import BaseModel
 
 from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
@@ -21,6 +23,9 @@ load_dotenv()
 
 app = FastAPI()
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -34,12 +39,17 @@ app.add_middleware(
 class PromptRequest(BaseModel):
     prompt: str
 
+#Definition of the custom fetch plugin:
 class FetchPlugin:
     """Plugin provides fetch of content from url."""
 
     @kernel_function(name="get_content_from_url", description="Get the content from url")
     def get_content_from_url(self, url: Annotated[str, "The input url"]) -> Annotated[str, "The output is a string"]:
         return fetch_text_content_from_url(url)
+
+
+# Global variable to store the kernel
+kernel = None
 
 async def setup_kernel():
     kernel = Kernel()
@@ -63,8 +73,19 @@ async def setup_kernel():
 
     return kernel
 
-kernel = asyncio.run(setup_kernel())
 
+@app.on_event("startup")
+async def startup_event():
+    global kernel
+    kernel = await setup_kernel()
+
+
+def get_kernel():
+    if kernel is None:
+        raise RuntimeError("Kernel is not initialized")
+    return kernel
+
+#Endpoint for chat prompts:
 @app.post("/demoprompt")
 async def demo_prompt(request: PromptRequest):
     settings: OpenAIChatPromptExecutionSettings = kernel.get_prompt_execution_settings_from_service_id(
@@ -80,6 +101,14 @@ async def demo_prompt(request: PromptRequest):
     )
     
     return {"response": str(result)}
+
+
+
+#Serving a simple chat webpage:
+
+@app.get("/")
+async def read_root():
+    return {"message": "Welcome to the API. Static files are served under /static"}
 
 if __name__ == "__main__":
     import uvicorn
