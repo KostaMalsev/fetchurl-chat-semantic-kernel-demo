@@ -1,1 +1,1 @@
-your-secret-key
+your-api-key
