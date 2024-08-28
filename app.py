@@ -51,12 +51,30 @@ class FetchPlugin:
 # Global variable to store the kernel
 kernel = None
 
+
+# Read the secret from a secret file which were injected by docker-compose
+def read_secret(secret_name):
+    try:
+        with open(f'/run/secrets/AZURE_OPENAI_API_KEY', 'r') as secret_file:
+            return secret_file.read().strip()
+    except IOError:
+        return None
+
+
+
 async def setup_kernel():
     kernel = Kernel()
 
     # Check if we're using Azure OpenAI
     if os.getenv('GLOBAL_LLM_SERVICE') != "AzureOpenAI":
         raise ValueError("This script is configured to use Azure OpenAI. Please check your .env file.")
+
+    #Check if the secret key is defined in environment variable (for dev perposes)
+    if 'AZURE_OPENAI_API_KEY' in os.environ:
+        azure_api_key= os.getenv('AZURE_OPENAI_API_KEY')
+    else:
+        #get the key from the secret file:
+        azure_api_key = read_secret('AZURE_OPENAI_API_KEY')
 
     service_id = "function_calling"
     
@@ -65,7 +83,7 @@ async def setup_kernel():
         service_id=service_id,
         deployment_name=os.getenv('AZURE_OPENAI_CHAT_DEPLOYMENT_NAME'),
         endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
-        api_key=os.getenv('AZURE_OPENAI_API_KEY'),
+        api_key= azure_api_key
     )
     
     kernel.add_service(ai_service)
