@@ -5,10 +5,9 @@ In this demo, we will use Semantic Kernel to integrate a custom plugin written i
 This plugin is designed to extract web content from URLs specified within the chat prompt.
 
 Repository Contents
-static/ - Contains static files.
+static/ - Contains webclient html.
 .env - Environment variable configurations.
 .env.example - Example environment configuration file.
-.gitignore - Git ignore file.
 Dockerfile - Docker configuration.
 api-key.txt - Placeholder for API key storage.
 app.py - Main application script.
