@@ -26,6 +26,7 @@ Using Docker:
 docker-compose up
 
 Test demo from browser at http://localhost:8000/static/webclient.html
+Note: you can find docker image of the service on dockerhub [chatserver](https://medium.com/r/?url=https%3A%2F%2Fhub.docker.com%2Fr%2Fkostyamalsev%2Fchatserver)
 
 Using Python directly:
 python app.py
