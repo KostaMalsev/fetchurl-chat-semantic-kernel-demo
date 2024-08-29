@@ -98,11 +98,6 @@ async def startup_event():
     kernel = await setup_kernel()
 
 
-def get_kernel():
-    if kernel is None:
-        raise RuntimeError("Kernel is not initialized")
-    return kernel
-
 #Endpoint for chat prompts:
 @app.post("/demoprompt")
 async def demo_prompt(request: PromptRequest):
